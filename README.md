@@ -1,77 +1,127 @@
-<!-- This should be the location of the title of the repository, normally the short name -->
-# repo-template
+# Spring Features
 
-<!-- Build Status, is a great thing to have at the top of your repository, it shows that you take your CI/CD as first class citizens -->
-<!-- [![Build Status](https://travis-ci.org/jjasghar/ibm-cloud-cli.svg?branch=master)](https://travis-ci.org/jjasghar/ibm-cloud-cli) -->
+## Overview
+This proof of concept includes 8 micro services. Each of it represents an Java Spring feature. This document helps 
+you to get an overview of the project and a guide.
 
-<!-- Not always needed, but a scope helps the user understand in a short sentance like below, why this repo exists -->
-## Scope
+The repository contains the following micro services.
 
-The purpose of this project is to provide a template for new open source repositories.
+* Service Addressbook
+* Service People
+* Service Client
+* [Service Eureka](https://cloud.spring.io/spring-cloud-netflix)
+* [Service Gateway (Zuul)](https://spring.io/guides/gs/routing-and-filtering)
+* [Service Hystrix](https://spring.io/guides/gs/circuit-breaker)
+* [Service Monitor (Spring Admin)](https://github.com/codecentric/spring-boot-admin)
+* [Service Zipkin](https://cloud.spring.io/spring-cloud-sleuth/spring-cloud-sleuth.html)
 
-<!-- A more detailed Usage or detailed explaination of the repository here -->
-## Usage
+## Architecture
+The following picture is summarizing the architecture of the project.
+![Image of the architecture](./architecture.png)
 
-This repository contains some example best practices for open source repositories:
 
-* [LICENSE](LICENSE)
-* [README.md](README.md)
-* [CONTRIBUTING.md](CONTRIBUTING.md)
-* [MAINTAINERS.md](MAINTAINERS.md)
-<!-- A Changelog allows you to track major changes and things that happen, https://github.com/github-changelog-generator/github-changelog-generator can help automate the process -->
-* [CHANGELOG.md](CHANGELOG.md)
+## Preparation
+Please install the following tools on your local machine:
+* Java JDK 11 ([https://www.java.com/de/download/help/download_options.xml](https://www.java.com/de/download/help/download_options.xml))
+* The newest version of git ([https://git-scm.com](https://git-scm.com))
+* The newest version of maven ([https://maven.apache.org](https://maven.apache.org))
 
-> These are optional
+## Starting
+There are two ways to start this spring feature poc:
+* manual via maven
+* automatically via maven
 
-<!-- The following are OPTIONAL, but strongly suggested to have in your repository. -->
-* [dco.yml](.github/dco.yml) - This enables DCO bot for you, please take a look https://github.com/probot/dco for more details.
-* [travis.yml](.travis.yml) - This is a example `.travis.yml`, please take a look https://docs.travis-ci.com/user/tutorial/ for more details.
-
-These may be copied into a new or existing project to make it easier for developers not on a project team to collaborate.
-
-<!-- A notes section is useful for anything that isn't covered in the Usage or Scope. Like what we have below. -->
-## Notes
-
-**NOTE: While this boilerplate project uses the Apache 2.0 license, when
-establishing a new repo using this template, please use the
-license that was approved for your project.**
-
-**NOTE: This repository has been configured with the [DCO bot](https://github.com/probot/dco).
-When you set up a new repository that uses the Apache license, you should
-use the DCO to manage contributions. The DCO bot will help enforce that.
-Please contact one of the IBM GH Org stewards.**
-
-<!-- Questions can be useful but optional, this gives you a place to say, "This is how to contact this project maintainers or create PRs -->
-If you have any questions or issues you can create a new [issue here][issues].
-
-Pull requests are very welcome! Make sure your patches are well tested.
-Ideally create a topic branch for every separate change you make. For
-example:
-
-1. Fork the repo
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
-
-## License
-
-All source files must include a Copyright and License header. The SPDX license header is 
-preferred because it can be easily scanned.
-
-If you would like to see the detailed LICENSE click [here](LICENSE).
-
-```text
-#
-# Copyright 2020- IBM Inc. All rights reserved
-# SPDX-License-Identifier: Apache2.0
-#
+### Manual via maven
+After cloning the complete repository to your local computer, change to the subfolder and start each micro service with
+maven:
 ```
-## Authors
+mvn -DDOCKER_MACHINE_IP=127.0.0.1 -DEUREKA_PORT=8761 -DZIPKIN_PORT=9411 spring-boot:run
+```
+Please be sure to start the services in this order:
+1. service-eureka
+2. service-addressbook
+3. service-people
+4. service-client
 
-Optionally, you may include a list of authors, though this is redundant with the built-in
-GitHub list of contributors.
+### Automatically via maven
+To start all services via the shell-script, type the following command:
+```
+.\build_local.sh
+```
 
-- Author: New OpenSource IBMer <new-opensource-ibmer@ibm.com>
+## Description of each micro services
 
-[issues]: https://github.com/IBM/repo-template/issues/new
+### Service Addressbook (:8762)
+The Addressbook service creates an address book with people in it. The amount of people can be defined as an url 
+parameter (e.g. 10).  The service gets all the people from the service "service-people".
+
+There are two possibilities to get an address book. The endpoint "getAddressbookMultiple" calls the service-people once 
+to get all the people. The endpoint "getAddressbookSingle" calls the service-people multiple times. 
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8762/getAddressbookMultiple/10](http://127.0.0.1:8762/getAddressbookMultiple/10)
+* Service-Request: [http://127.0.0.1:8762/getAddressbookSingle/10](http://127.0.0.1:8762/getAddressbookSingle/10)
+* Info: [http://127.0.0.1:8762/info](http://127.0.0.1:8762/info)
+* Swagger-Doku: [http://127.0.0.1:8762/swagger-ui.html](http://127.0.0.1:8762/swagger-ui.html)
+* Swagger-JSON: [http://127.0.0.1:8762/v2/api-docs](http://127.0.0.1:8762/v2/api-docs)
+
+### Service People (:8767)
+This service creates people. The amount of people can be defined as a url parameter (e.g. 10). The service generates 
+random names and details.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8767/getPeopleMultiple/10](http://127.0.0.1:8767/getPeopleMultiple/10)
+* Service-Request: [http://127.0.0.1:8767/getPeopleSingle](http://127.0.0.1:8767/getPeopleSingle)
+* Info: [http://127.0.0.1:8767/info](http://127.0.0.1:8767/info)
+* Swagger-Doku: [http://127.0.0.1:8767/swagger-ui.html](http://127.0.0.1:8767/swagger-ui.html)
+* Swagger-JSON: [http://127.0.0.1:8762/v2/api-docs](http://127.0.0.1:8762/v2/api-docs)
+
+### Service Client (:8764)
+This service creates an HTML/AngularJS web page. There it is possible to see the service url from the address book 
+service and requests an specific amount of people.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8764](http://127.0.0.1:8764)
+* Info: [http://127.0.0.1:8764/info](http://127.0.0.1:8764/info)
+
+### Service Eureka (:8761)
+This service starts an eureka server. With this you can manage and see all available services.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8761](http://127.0.0.1:8761)
+* Info: [http://127.0.0.1:8761/info](http://127.0.0.1:8761/info)
+
+### Service Gateway (:8765)
+This service starts an Spring Zuul server. With this you can use load balancing and proxy requests in the project.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8765](http://127.0.0.1:8765)
+* Info: [http://127.0.0.1:8765/info](http://127.0.0.1:8765/info)
+
+### Service Hystrix (:8768)
+This service starts an Spring Hystrix dashboard which can visualize the turbine or hystrix streams.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8768/hystrix](http://127.0.0.1:8768/hystrix)
+* Info: [http://127.0.0.1:8768/info](http://127.0.0.1:8768/info)
+* Hystrix-Stream: [http://127.0.0.1:8768/turbine.stream](http://127.0.0.1:8768/turbine.stream)
+
+### Service Monitor (:8766)
+This service starts an Spring Boot Admin server. With this you can have an detailed view for each micro service. Its also
+possible to see all calls, logging or version details. Also an ram usage is available.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:8766](http://127.0.0.1:8766)
+* Info: [http://127.0.0.1:8766/info](http://127.0.0.1:8766/info)
+
+### Service Zipkin (:9411)
+This service starts an Spring Zipkin server. With this you can trace all requests from each micro service.
+
+#### Endpoints
+* Service-Request: [http://127.0.0.1:9411](http://127.0.0.1:9411)
+* Info: [http://127.0.0.1:9411/info](http://127.0.0.1:9411/info)
+
+## Deploy to IBM Cloud
+With the following button you can deplo the poc to the IBM Cloud.
+
+[![Deploy to IBM Cloud](https://cloud.ibm.com/devops/setup/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/IBM/spring-features.git)

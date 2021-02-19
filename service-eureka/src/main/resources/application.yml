@@ -1,0 +1,38 @@
+#
+# Copyright 2020- IBM Inc. All rights reserved
+# SPDX-License-Identifier: Apache2.0
+#
+server:
+  port: ${EUREKA_PORT}
+
+eureka:
+  instance:
+    preferIpAddress: true
+    ipAddress: ${DOCKER_MACHINE_IP}
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:${EUREKA_PORT}/eureka/
+  server:
+    enableSelfPreservation: true
+
+spring:
+  application:
+    name: service-eureka
+  sleuth:
+    sampler:
+      percentage: 1.0
+  zipkin:
+    baseUrl: http://${DOCKER_MACHINE_IP}:${ZIPKIN_PORT}
+
+management:
+  security:
+    enabled: false
+
+logging:
+  file: ./${spring.application.name}.log
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure:
+            logging: DEBUG

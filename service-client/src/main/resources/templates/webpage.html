@@ -1,0 +1,125 @@
+<!--
+#
+# Copyright 2020- IBM Inc. All rights reserved
+# SPDX-License-Identifier: Apache2.0
+#
+-->
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+    <title>Spring-Features Client</title>
+    <link href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.4/angular-material.min.css" rel="stylesheet"
+          media="screen"/>
+    <style>
+        #spinner {
+            position: fixed;
+            z-index: 99;
+            left: calc(50% - 46px);
+            top: calc(50% - 46px);
+        }
+    </style>
+</head>
+<body ng-app="client" layout="column" ng-cloak="true">
+
+<md-toolbar layout="row" class="md-toolbar-tools">
+    <h1>Spring-Features Client</h1>
+</md-toolbar>
+
+<md-content flex="true" layout-padding="true" ng-controller="controllerMain" layout="row">
+
+    <div layout="column" flex="30">
+        <div layout="column">
+            <h3 class="md-headline">Services</h3>
+            <div ng-model="service">
+                - <span id="url" th:text="${gatewayservice}"/>
+            </div>
+        </div>
+        <div layout="column">
+            <h3 class="md-headline">Input</h3>
+            <md-input-container>
+                <label>Amount of people</label>
+                <input ng-model="people.amount"/>
+            </md-input-container>
+
+            <md-button ng-click="sendRequestMultiple()" class="md-primary">Get AddressBook (Multiple)</md-button>
+            <md-button ng-click="sendRequestSingle()" class="md-warn">Get AddressBook (Single)</md-button>
+        </div>
+    </div>
+
+    <div layout="column" flex="70">
+        <h3 class="md-headline">List of people</h3>
+        <div ng-show="duration" class="md-subhead"><strong>Duration:</strong> {{ duration }} seconds.</div>
+        <md-list flex="true">
+            <md-list-item class="md-3-line" ng-repeat="people in addressBook" ng-click="null">
+                <div class="md-list-item-text" layout="column">
+                    <h3>Firstname {{ people.firstname }}</h3>
+                    <h4>Lastname {{ people.lastname }}</h4>
+                    <p>Telephone {{ people.telephone }}</p>
+                </div>
+            </md-list-item>
+        </md-list>
+    </div>
+
+    <div id="spinner" layout="row" layout-sm="column" layout-align="space-around" ng-show="loading">
+        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+    </div>
+
+</md-content>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-aria.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-messages.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.4/angular-material.min.js"></script>
+
+<script type="text/javascript">
+
+    var client = angular.module('client', ['ngMaterial']);
+
+    client.controller('controllerMain', function ($scope, $http, $mdToast, $interval) {
+        var stop, intervalFunction, seconds;
+        $scope.people = {};
+        $scope.sendRequestMultiple = function () {
+            startLoading();
+            $http.get(angular.element(document.querySelector('#url'))[0].innerHTML + "/api/addressbook/getAddressbookMultiple/" + $scope.people.amount)
+                .then(function (response) {
+                    $scope.addressBook = response.data;
+                    $scope.loading = false;
+                    $mdToast.showSimple("Data is available...");
+                    stop = true;
+                });
+        };
+        $scope.sendRequestSingle = function () {
+            startLoading();
+            $http.get(angular.element(document.querySelector('#url'))[0].innerHTML + "/api/addressbook/getAddressbookSingle/" + $scope.people.amount)
+                .then(function (response) {
+                    $scope.addressBook = response.data;
+                    $scope.loading = false;
+                    $mdToast.showSimple("Data is available...");
+                    stop = true;
+                });
+        };
+
+        function startLoading() {
+            $scope.loading = true;
+            stop = false;
+            seconds = 0;
+            intervalFunction = $interval(updatingFunc, 1000);
+        }
+
+        function updatingFunc() {
+            seconds++;
+            $scope.duration = seconds;
+            if (stop) {
+                $interval.cancel(intervalFunction);
+            }
+        }
+    });
+
+</script>
+
+</body>
+</html>
